@@ -20,9 +20,10 @@ struct AVLNode {
         AVLNode* right;  
         int height;  
            //This is the constructor for the AVL node
-        AVLNode(const key& k, const value& v)
-            : k(k), height(0), left(nullptr), right(nullptr) {
-            this->v[v] = 1; // Initializes frequency count
+        // Constructor for the AVLNode
+        AVLNode(const KeyType& key, const ValueType& value)
+        : key(key), height(0), left(nullptr), right(nullptr) {
+        this->values[value] = 1;  // Initializes frequency count
         }
     };
 
@@ -68,13 +69,13 @@ public:
 
     void clear();
 
-    map<ValueType, int> getNode(const KeyType& key);
+    map<ValueType, int> getNode(const KeyType& key) const;
 
     void insert(const KeyType& key, const ValueType& val);
 
     int getSize() const;
 
-    void printTree(ostream& out);
+    void printTree(ostream& out) const;
 };
 
 #include "AVLTree.cpp"  

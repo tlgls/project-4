@@ -32,7 +32,7 @@ void AVLTree<KeyType, ValueType>::insert(const KeyType& key, const ValueType& va
 }
 
 template <typename KeyType, typename ValueType>
-map<ValueType, int> AVLTree<KeyType, ValueType>::getNode(const KeyType& key) {
+map<ValueType, int> AVLTree<KeyType, ValueType>::getNode(const KeyType& key) const {
     return getNodeData(key, root);
 }
 
@@ -71,22 +71,24 @@ void AVLTree<KeyType, ValueType>::insertNode(const KeyType& key, const ValueType
     }
     balanceTree(node);
 }
+
 // Insert a node with a specific frequency for the value
 template <typename KeyType, typename ValueType>
-void AVLTree<KeyType, ValueType>::insertNode(const KeyType& key, const ValueType& val, int frequency, AVLNode*& node) {
+void AVLTree<KeyType, ValueType>::insertNode(const KeyType& key, const ValueType& value, int frequency, AVLNode*& node) {
     if (node == nullptr) {
-        node = new AVLNode(key, val); //Creates new node if empty
-        node->values[val] = frequency; // initializes node with given frequencu
+        node = new AVLNode(key, value);  // Creates a new node if empty
+        node->values[value] = frequency; // initializes node with given frequency
         nodeCount++;
     } else if (key < node->key) {
-        insertNode(key, val, frequency, node->left);
+        insertNode(key, value, frequency, node->left);  // Insert into left subtree
     } else if (key > node->key) {
-        insertNode(key, val, frequency, node->right);
+        insertNode(key, value, frequency, node->right); // Insert into right subtree
     } else {
-        node->values[val] = frequency; // If the key exist we set the frequency
+        node->values[value] = frequency;  // If the key exists, update frequency
     }
-    balanceTree(node);
+    balanceTree(node);  // Rebalance tree if needed
 }
+
 
 template <typename KeyType, typename ValueType>
 map<ValueType, int> AVLTree<KeyType, ValueType>::getNodeData(const KeyType& key, AVLNode* node) {
@@ -100,27 +102,33 @@ map<ValueType, int> AVLTree<KeyType, ValueType>::getNodeData(const KeyType& key,
         return node->values;
     }
 }
-// Function to balance AVL Tree
+// Balancing the AVL Tree to maintain its properties
 template <typename KeyType, typename ValueType>
 void AVLTree<KeyType, ValueType>::balanceTree(AVLNode*& node) {
     if (node == nullptr) return;
-    //checks for left impalance 
-    if (getNodeHeight(node->left) - getNodeHeight(node->right) > 1) {
+
+    int balance = getNodeHeight(node->left) - getNodeHeight(node->right);
+
+    if (balance > 1) {
+        // Left-heavy case
         if (getNodeHeight(node->left->left) >= getNodeHeight(node->left->right)) {
-            rotateLeft(node); 
+            rotateLeft(node);
         } else {
-            rotateDoubleLeft(node); 
+            rotateDoubleLeft(node);
         }
-        //checks for right inbalance
-    } else if (getNodeHeight(node->right) - getNodeHeight(node->left) > 1) {
+    } else if (balance < -1) {
+        // Right-heavy case
         if (getNodeHeight(node->right->right) >= getNodeHeight(node->right->left)) {
             rotateRight(node);
         } else {
             rotateDoubleRight(node);
         }
     }
-    node->height = max(getNodeHeight(node->left), getNodeHeight(node->right)) + 1;
+    
+    // Update the height of the current node
+    node->height = std::max(getNodeHeight(node->left), getNodeHeight(node->right)) + 1;
 }
+
 
 template <typename KeyType, typename ValueType>
 int AVLTree<KeyType, ValueType>::getNodeHeight(AVLNode* node) {
@@ -181,6 +189,6 @@ void AVLTree<KeyType, ValueType>::printTree(ostream& out, AVLNode* node) {
 }
 
 template <typename KeyType, typename ValueType>
-void AVLTree<KeyType, ValueType>::printTree(ostream& out) {
+void AVLTree<KeyType, ValueType>::printTree(ostream& out) const {
     printTree(out, root);
 }
