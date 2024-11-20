@@ -1,86 +1,82 @@
 // Tree Template Implementation
 // Authored by Antonio Flores 11/19/2024
 
-#ifndef AVLTREE_H
-#define AVLTREE_H
+#ifndef AVL_TREE_H
+#define AVL_TREE_H
 
 #include <iostream>
 #include <map>
+
 using namespace std;
 
-template <typename key, typename value>
+template <typename KeyType, typename ValueType>
 class AVLTree {
 private:
-
-    // This structure represents a node in the AVL Tree
-    struct AVLNode {
-        key k;
-        map<value, int> v;
-        int height;
-        AVLNode* left;
-        AVLNode* right;
-
-        //This is the constructor for the AVL node
+// This structure represents a node in the AVL Tree
+struct AVLNode {
+        KeyType key;  
+        map<ValueType, int> values;  
+        AVLNode* left;  
+        AVLNode* right;  
+        int height;  
+           //This is the constructor for the AVL node
         AVLNode(const key& k, const value& v)
             : k(k), height(0), left(nullptr), right(nullptr) {
             this->v[v] = 1; // Initializes frequency count
         }
     };
 
-    AVLNode* root;
-    int size;
+private:
+    AVLNode* root;  
+    int nodeCount;  
 
     // Private function declarations
+    void clear(AVLNode*& node);
 
-    void clear(AVLNode*& n);
+    map<ValueType, int> getNodeData(const KeyType& key, AVLNode* node);
 
-    map<value, int> getNode(const key&, AVLNode*& n);
+    void insertNode(const KeyType& key, const ValueType& val, AVLNode*& node);
 
-    void insert(const key&, const value&, AVLNode*& n);
+    void insertNode(const KeyType& key, const ValueType& val, int frequency, AVLNode*& node);
 
-    void insert(const key&, const value&, const int&, AVLNode*& n);
+    void balanceTree(AVLNode*& node);
 
-    void balance(AVLNode*& n);
+    int getNodeHeight(AVLNode* node);
 
-    int height(AVLNode* n);
+    void deepCopyTree(AVLNode*& dest, AVLNode* src);
 
-    void clone(AVLNode*& thisNode, AVLNode* copyNode);
+    void rotateLeft(AVLNode*& node);
 
-    void rotateLeft(AVLNode*& n);
+    void rotateRight(AVLNode*& node);
 
-    void rotateRight(AVLNode*& n);
+    void rotateDoubleLeft(AVLNode*& node);
 
-    void rotateDoubleLeft(AVLNode*& n);
+    void rotateDoubleRight(AVLNode*& node);
 
-    void rotateDoubleRight(AVLNode*& n);
-
-    void printTree(ostream&, AVLNode*& n);
+    void printTree(ostream& out, AVLNode* node);
 
 public:
-    // Constructor
-    AVLTree();
-    // Copy constructor
-    AVLTree(const AVLTree& other);
+    // constructor
+    AVLTree();  
+    //Copy constructor
+    AVLTree(const AVLTree& other);  
     // Destructor
-    ~AVLTree();
+    ~AVLTree();  
 
-    AVLTree& operator=(const AVLTree& other);
+    //Public Funtion Declarations
+    AVLTree& operator=(const AVLTree& other);  
 
-    // These are the public function declarations
     void clear();
 
-    void insert(const key&, const value&);
+    map<ValueType, int> getNode(const KeyType& key);
 
-    void insert(const key&, const value&, const int&);
-
-    map<value, int> getNode(const key&);
+    void insert(const KeyType& key, const ValueType& val);
 
     int getSize() const;
 
-    void printTree(ostream&);
+    void printTree(ostream& out);
 };
 
+#include "AVLTree.cpp"  
 
-#include "AVLTree.cpp"
-
-#endif
+#endif 

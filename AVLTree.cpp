@@ -1,207 +1,186 @@
 #include "AVLTree.h"
 
-// Constructor
-template <typename key, typename value>
-AVLTree<key, value>::AVLTree() : root(nullptr), size(0) {}
 
-// Copy constructor
-template <typename key, typename value>
-AVLTree<key, value>::AVLTree(const AVLTree& other) : root(nullptr), size(0) {
-    clone(root, other.root);
-}
+template <typename KeyType, typename ValueType>
+AVLTree<KeyType, ValueType>::AVLTree() : root(nullptr), nodeCount(0) {}
 
-// Destructor
-template <typename key, typename value>
-AVLTree<key, value>::~AVLTree() {
+template <typename KeyType, typename ValueType>
+AVLTree<KeyType, ValueType>::~AVLTree() {
     clear();
 }
 
-// Assignment operator
-template <typename key, typename value>
-AVLTree<key, value>& AVLTree<key, value>::operator=(const AVLTree& other) {
+template <typename KeyType, typename ValueType>
+AVLTree<KeyType, ValueType>::AVLTree(const AVLTree& other) : root(nullptr), nodeCount(0) {
+    deepCopyTree(root, other.root);
+}
+
+// This is an assignment operator to copy the contents of one AVLTree to another.
+template <typename KeyType, typename ValueType>
+AVLTree<KeyType, ValueType>& AVLTree<KeyType, ValueType>::operator=(const AVLTree& other) {
+    // This prevents asigning something to itself
     if (this != &other) {
         clear();
-        clone(root, other.root);
+        deepCopyTree(root, other.root);
     }
     return *this;
 }
 
-// Clears the tree
-template <typename key, typename value>
-void AVLTree<key, value>::clear() {
+// Insert a new node with a key into the AVL tree
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::insert(const KeyType& key, const ValueType& val) {
+    insertNode(key, val, root);
+}
+
+template <typename KeyType, typename ValueType>
+map<ValueType, int> AVLTree<KeyType, ValueType>::getNode(const KeyType& key) {
+    return getNodeData(key, root);
+}
+
+template <typename KeyType, typename ValueType>
+int AVLTree<KeyType, ValueType>::getSize() const {
+    return nodeCount;
+}
+
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::clear() {
     clear(root);
-    size = 0;
+    nodeCount = 0;
 }
 
-// Clears the tree recursively
-template <typename key, typename value>
-void AVLTree<key, value>::clear(AVLNode*& n) {
-    if (n != nullptr) {
-        clear(n->left);
-        clear(n->right);
-        delete n;
-        n = nullptr;
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::clear(AVLNode*& node) {
+    if (node != nullptr) {
+        clear(node->left);
+        clear(node->right);
+        delete node;
+        node = nullptr;
     }
 }
-
-// Insert function (without frequency)
-template <typename key, typename value>
-void AVLTree<key, value>::insert(const key& k, const value& v) {
-    insert(k, v, root);
-}
-
-// Insert function (with frequency)
-template <typename key, typename value>
-void AVLTree<key, value>::insert(const key& k, const value& v, AVLNode*& n) {
-    if (n == nullptr) {
-        n = new AVLNode(k, v);
-        size++;
-    } else if (k < n->k) {
-        insert(k, v, n->left);
-    } else if (k > n->k) {
-        insert(k, v, n->right);
+// Function to insert a node into the tree while keeping balance 
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::insertNode(const KeyType& key, const ValueType& val, AVLNode*& node) {
+    if (node == nullptr) {
+        node = new AVLNode(key, val); // Creates a new node if position is empty
+        nodeCount++;
+    } else if (key < node->key) {
+        insertNode(key, val, node->left); // This recursively inserts into the left subtree
+    } else if (key > node->key) {
+        insertNode(key, val, node->right);
     } else {
-        n->v[v]++;
+        node->values[val]++; // If we find the key exists, then we update the frequency
     }
-    balance(n);
+    balanceTree(node);
 }
-
-// Insert function with frequency
-template <typename key, typename value>
-void AVLTree<key, value>::insert(const key& k, const value& v, const int& freq, AVLNode*& n) {
-    if (n == nullptr) {
-        n = new AVLNode(k, v);
-        n->v[v] = freq;
-        size++;
-    } else if (k < n->k) {
-        insert(k, v, freq, n->left);
-    } else if (k > n->k) {
-        insert(k, v, freq, n->right);
+// Insert a node with a specific frequency for the value
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::insertNode(const KeyType& key, const ValueType& val, int frequency, AVLNode*& node) {
+    if (node == nullptr) {
+        node = new AVLNode(key, val); //Creates new node if empty
+        node->values[val] = frequency; // initializes node with given frequencu
+        nodeCount++;
+    } else if (key < node->key) {
+        insertNode(key, val, frequency, node->left);
+    } else if (key > node->key) {
+        insertNode(key, val, frequency, node->right);
     } else {
-        n->v[v] = freq;
+        node->values[val] = frequency; // If the key exist we set the frequency
     }
-    balance(n);
+    balanceTree(node);
 }
 
-// Retrieve the node's map of values by key
-template <typename key, typename value>
-map<value, int> AVLTree<key, value>::getNode(const key& k) const {
-    return getNode(k, root);
-}
-
-// Retrieve the node's map of values by key (helper function)
-template <typename key, typename value>
-map<value, int> AVLTree<key, value>::getNode(const key& k, AVLNode* n) const {
-    if (n == nullptr) {
-        return map<value, int>();
-    } else if (k < n->k) {
-        return getNode(k, n->left);
-    } else if (k > n->k) {
-        return getNode(k, n->right);
+template <typename KeyType, typename ValueType>
+map<ValueType, int> AVLTree<KeyType, ValueType>::getNodeData(const KeyType& key, AVLNode* node) {
+    if (node == nullptr) {
+        return map<ValueType, int>();
+    } else if (key < node->key) {
+        return getNodeData(key, node->left);
+    } else if (key > node->key) {
+        return getNodeData(key, node->right);
     } else {
-        return n->v;
+        return node->values;
     }
 }
-
-// Get the size of the tree
-template <typename key, typename value>
-int AVLTree<key, value>::getSize() const {
-    return size;
-}
-
-// Get the height of a node
-template <typename key, typename value>
-int AVLTree<key, value>::height(AVLNode* n) const {
-    return n == nullptr ? -1 : n->height;
-}
-
-// Balance the tree after insertion
-template <typename key, typename value>
-void AVLTree<key, value>::balance(AVLNode*& n) {
-    if (n == nullptr) return;
-
-    if (height(n->left) - height(n->right) > 1) {
-        if (height(n->left->left) >= height(n->left->right)) {
-            rotateRight(n);
+// Function to balance AVL Tree
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::balanceTree(AVLNode*& node) {
+    if (node == nullptr) return;
+    //checks for left impalance 
+    if (getNodeHeight(node->left) - getNodeHeight(node->right) > 1) {
+        if (getNodeHeight(node->left->left) >= getNodeHeight(node->left->right)) {
+            rotateLeft(node); 
         } else {
-            rotateDoubleRight(n);
+            rotateDoubleLeft(node); 
         }
-    } else if (height(n->right) - height(n->left) > 1) {
-        if (height(n->right->right) >= height(n->right->left)) {
-            rotateLeft(n);
+        //checks for right inbalance
+    } else if (getNodeHeight(node->right) - getNodeHeight(node->left) > 1) {
+        if (getNodeHeight(node->right->right) >= getNodeHeight(node->right->left)) {
+            rotateRight(node);
         } else {
-            rotateDoubleLeft(n);
+            rotateDoubleRight(node);
         }
     }
-    n->height = max(height(n->left), height(n->right)) + 1;
+    node->height = max(getNodeHeight(node->left), getNodeHeight(node->right)) + 1;
 }
 
-// Rotate left function
-template <typename key, typename value>
-void AVLTree<key, value>::rotateLeft(AVLNode*& n) {
-    AVLNode* temp = n->right;
-    n->right = temp->left;
-    temp->left = n;
-    n->height = max(height(n->left), height(n->right)) + 1;
-    temp->height = max(height(temp->right), n->height) + 1;
-    n = temp;
+template <typename KeyType, typename ValueType>
+int AVLTree<KeyType, ValueType>::getNodeHeight(AVLNode* node) {
+    return node == nullptr ? 0 : node->height;
 }
 
-// Rotate right function
-template <typename key, typename value>
-void AVLTree<key, value>::rotateRight(AVLNode*& n) {
-    AVLNode* temp = n->left;
-    n->left = temp->right;
-    temp->right = n;
-    n->height = max(height(n->left), height(n->right)) + 1;
-    temp->height = max(height(temp->left), n->height) + 1;
-    n = temp;
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::rotateLeft(AVLNode*& node) {
+    AVLNode* temp = node->left;
+    node->left = temp->right;
+    temp->right = node;
+    node->height = max(getNodeHeight(node->left), getNodeHeight(node->right)) + 1;
+    node = temp;
 }
 
-// Double rotate left function
-template <typename key, typename value>
-void AVLTree<key, value>::rotateDoubleLeft(AVLNode*& n) {
-    rotateRight(n->right);
-    rotateLeft(n);
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::rotateRight(AVLNode*& node) {
+    AVLNode* temp = node->right;
+    node->right = temp->left;
+    temp->left = node;
+    node->height = max(getNodeHeight(node->left), getNodeHeight(node->right)) + 1;
+    node = temp;
 }
 
-// Double rotate right function
-template <typename key, typename value>
-void AVLTree<key, value>::rotateDoubleRight(AVLNode*& n) {
-    rotateLeft(n->left);
-    rotateRight(n);
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::rotateDoubleLeft(AVLNode*& node) {
+    rotateRight(node->left);
+    rotateLeft(node);
 }
 
-// Clone function (to copy another AVL tree)
-template <typename key, typename value>
-void AVLTree<key, value>::clone(AVLNode*& thisNode, AVLNode* copyNode) {
-    if (copyNode == nullptr) {
-        thisNode = nullptr;
-    } else {
-        thisNode = new AVLNode(copyNode->k, value()); // Dummy value, actual map copied below
-        thisNode->v = copyNode->v;
-        thisNode->height = copyNode->height;
-        clone(thisNode->left, copyNode->left);
-        clone(thisNode->right, copyNode->right);
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::rotateDoubleRight(AVLNode*& node) {
+    rotateLeft(node->right);
+    rotateRight(node);
+}
+
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::deepCopyTree(AVLNode*& dest, AVLNode* src) {
+    if (src != nullptr) {
+        dest = new AVLNode(src->key, src->values.begin()->first);
+        deepCopyTree(dest->left, src->left);
+        deepCopyTree(dest->right, src->right);
+        nodeCount++;
     }
 }
 
-// Print tree in-order
-template <typename key, typename value>
-void AVLTree<key, value>::printTree(ostream& os) const {
-    printTree(os, root);
-}
-
-// Print tree recursively (helper function)
-template <typename key, typename value>
-void AVLTree<key, value>::printTree(ostream& os, AVLNode* n) const {
-    if (n != nullptr) {
-        printTree(os, n->left);
-        os << n->k;
-        for (const auto& [val, freq] : n->v) {
-            os << " -> [" << val << ", " << freq << "]";
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::printTree(ostream& out, AVLNode* node) {
+    if (node != nullptr) {
+        printTree(out, node->left);
+        out << node->key;
+        for (const auto& item : node->values) {
+            out << "; " << item.first << "," << item.second;
         }
-        os << endl;
-        printTree(os, n->right);
+        out << endl;
+        printTree(out, node->right);
     }
+}
+
+template <typename KeyType, typename ValueType>
+void AVLTree<KeyType, ValueType>::printTree(ostream& out) {
+    printTree(out, root);
 }
