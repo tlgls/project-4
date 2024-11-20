@@ -1,27 +1,27 @@
-#include "DocumentHandler.h"
+#include "IndexHandler.h"
 #include <iostream>
 
 // Helper function to increment the document count
-void DocumentHandler::incrementDocumentCount(const std::string& document) {
+void IndexHandler::incrementDocumentCount(const std::string& document) {
     documentCounter[document]++;
 }
 
-void DocumentHandler::addPhrase(const std::string& word, const std::string& document) {
+void IndexHandler::addPhrase(const std::string& word, const std::string& document) {
     incrementDocumentCount(document);
     phraseTree.insert(word, document);  // Inserts the word into the phrase AVL tree
 }
 
-void DocumentHandler::addOrganization(const std::string& word, const std::string& document) {
+void IndexHandler::addOrganization(const std::string& word, const std::string& document) {
     incrementDocumentCount(document);
     organizationTree.insert(word, document);  // Inserts the word into the organization AVL tree
 }
 
-void DocumentHandler::addPerson(const std::string& word, const std::string& document) {
+void IndexHandler::addPerson(const std::string& word, const std::string& document) {
     incrementDocumentCount(document);
     personTree.insert(word, document);  // Inserts the word into the person AVL tree
 }
 
-void DocumentHandler::savePersistence() const {
+void IndexHandler::savePersistence() const {
     std::ofstream outFile("persistency_data.txt");
 
     outFile << phraseTree.getSize() << std::endl;
@@ -36,7 +36,7 @@ void DocumentHandler::savePersistence() const {
     outFile.close();
 }
 
-void DocumentHandler::loadPersistence() {
+void IndexHandler::loadPersistence() {
     std::ifstream inFile("persistency_data.txt");
 
     if (!inFile.is_open()) {
@@ -75,19 +75,19 @@ void DocumentHandler::loadPersistence() {
     inFile.close();
 }
 
-std::map<std::string, int> DocumentHandler::getPhraseData(const std::string& word) const {
+std::map<std::string, int> IndexHandler::getPhraseData(const std::string& word) const {
     return phraseTree.getNode(word);
 }
 
-std::map<std::string, int> DocumentHandler::getOrganizationData(const std::string& word) const {
+std::map<std::string, int> IndexHandler::getOrganizationData(const std::string& word) const {
     return organizationTree.getNode(word);
 }
 
-std::map<std::string, int> DocumentHandler::getPersonData(const std::string& word) const {
+std::map<std::string, int> IndexHandler::getPersonData(const std::string& word) const {
     return personTree.getNode(word);
 }
 
-int DocumentHandler::getDocumentFrequency(const std::string& document) const {
+int IndexHandler::getDocumentFrequency(const std::string& document) const {
     if (documentCounter.find(document) != documentCounter.end()) {
         return documentCounter.at(document);
     }

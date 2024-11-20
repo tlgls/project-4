@@ -10,7 +10,7 @@
 #include "AVLTree.h"
 
 // This class will handle document data using AVL trees for phrases, organizations, and people
-class DocumentHandler {
+class IndexHandler {
 private:
     // Making AVL trees for phrases, organizations, and people
     AVLTree<std::string, std::string> phraseTree;
